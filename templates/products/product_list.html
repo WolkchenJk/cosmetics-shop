@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<section class="hero-banner">
+  <img src="{% static 'images/banner.jpg' %}" alt="Главный баннер">
+
+  <!-- Иконки в правом верхнем углу -->
+<div class="hero-icons">
+  <a href="https://wa.me/79264010554" class="icon-link">
+    <i data-feather="phone"></i>
+  </a>
+  <a href="/search/" class="icon-link">
+    <i data-feather="search"></i>
+  </a>
+  <a href="/account/" class="icon-link">
+    <i data-feather="user"></i>
+  </a>
+  <a href="/favorites/" class="icon-link">
+    <i data-feather="heart"></i>
+  </a>
+  <a href="/cart/" class="icon-link">
+    <i data-feather="shopping-bag"></i>
+  </a>
+</div>
+
+
+  <!-- Меню кнопок на баннере -->
+  <div class="hero-menu">
+    <div class="hero-menu">
+  <a href="{% url 'dlya_tela'  %}" class="hero-btn">Для тела</a>
+  <a href="{% url 'dlya_volos' %}" class="hero-btn">Для волос</a>
+  <a href="{% url 'parfum'     %}" class="hero-btn">Парфюм</a>
+  <a href="{% url 'aromati'      %}" class="hero-btn">Ароматы</a>
+  <a href="{% url 'about'      %}" class="hero-btn">О нас</a>
+</div>
+
+  </div>
+</section>
+
+<h1>Каталог косметики</h1>
+<div class="product-grid">
+  {% for product in products %}
+    <div class="product-card">
+      <a href="{% url 'product_detail' product.pk %}">
+        {% if product.image %}
+          <img src="{{ product.image.url }}" alt="{{ product.name }}">
+        {% endif %}
+        <h2>{{ product.name }}</h2>
+        <p>{{ product.price }} ₽</p>
+      </a>
+    </div>
+  {% empty %}
+    <p>Товаров пока нет.</p>
+  {% endfor %}
+</div>
+
+{% if is_paginated %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">&laquo; назад</a>{% endif %}
+    <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">далее &raquo;</a>{% endif %}
+  </div>
+{% endif %}
+{% endblock %}
