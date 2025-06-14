@@ -1,42 +1,40 @@
-from django.views.generic import ListView, DetailView
-from .models import Product
 import json
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
-from .models import Product, Category
 from django.views.generic import ListView, DetailView, TemplateView
+from .models import Product, Category
 
 class DlyaTelaView(ListView):
-    model               = Product
-    template_name       = 'products/dlya_tela.html'
+    model = Product
+    template_name = 'products/dlya_tela.html'
     context_object_name = 'products'
-    paginate_by         = 12
+    paginate_by = 12
     def get_queryset(self):
         return Product.objects.filter(category__slug='dlya-tela')
 
 class DlyaVolosView(ListView):
-    model               = Product
-    template_name       = 'products/dlya_volos.html'
+    model = Product
+    template_name = 'products/dlya_volos.html'
     context_object_name = 'products'
-    paginate_by         = 12
+    paginate_by = 12
     def get_queryset(self):
         return Product.objects.filter(category__slug='dlya-volos')
     
 class AromatiView(ListView):
-    model               = Product
-    template_name       = 'products/aromati.html'
+    model = Product
+    template_name = 'products/aromati.html'
     context_object_name = 'products'
-    paginate_by         = 12
+    paginate_by = 12
     def get_queryset(self):
         return Product.objects.filter(category__slug='aromati')
 
 class ParfumView(ListView):
-    model               = Product
-    template_name       = 'products/parfum.html'
+    model = Product
+    template_name = 'products/parfum.html'
     context_object_name = 'products'
-    paginate_by         = 12
+    paginate_by = 12
     def get_queryset(self):
         return Product.objects.filter(category__slug='parfum')
 
@@ -45,7 +43,7 @@ class ProductListView(ListView):
     model = Product
     template_name = 'products/product_list.html'
     context_object_name = 'products'
-    paginate_by = 12  # по 12 товаров на страницу
+    paginate_by = 12 
 
 class ProductDetailView(DetailView):
     model = Product
@@ -57,13 +55,17 @@ class AboutView(TemplateView):
 
 
 @require_POST
-@csrf_exempt  # если не хотите возиться с CSRF в AJAX, но лучше вынуть и настроить токен
+@csrf_exempt  
 def cart_add(request):
     data = json.loads(request.body)
     pid = str(data.get('product_id'))
     qty = int(data.get('quantity', 1))
     cart = request.session.get('cart', {})
-    cart[pid] = cart.get(pid, 0) + qty
+    new_qty = cart.get(pid, 0) + qty
+    if new_qty <= 0:
+        cart.pop(pid, None)
+    else:
+        cart[pid] = new_qty
     request.session['cart'] = cart
     return JsonResponse({'cart': cart})
 
@@ -85,12 +87,17 @@ def cart_detail(request):
     for pid, qty in cart.items():
         prod = get_object_or_404(Product, pk=pid)
         subtotal = prod.price * qty
+        image_url = ''
+        img = prod.images.first()
+        if img:
+            image_url = img.image.url
         items.append({
             'id': prod.pk,
             'name': prod.name,
             'price': float(prod.price),
             'quantity': qty,
             'subtotal': float(subtotal),
+            'image': image_url,
         })
         total += subtotal
     return JsonResponse({'items': items, 'total': float(total)})
@@ -125,21 +132,7 @@ class CategoryProductListView(ListView):
 
     def get_queryset(self):
         return Product.objects.filter(category__slug=self.kwargs['slug'])
-    
-    # products/views.py
-# products/views.py
-from django.views.generic import ListView
-from .models import Product, Category
-
-class CategoryProductListView(ListView):
-    model               = Product
-    template_name       = 'products/product_list.html'
-    context_object_name = 'products'
-    paginate_by         = 12
-
-    def get_queryset(self):
-        return Product.objects.filter(category__slug=self.kwargs['slug'])
-    
+ 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['category'] = Category.objects.get(slug=self.kwargs['slug'])

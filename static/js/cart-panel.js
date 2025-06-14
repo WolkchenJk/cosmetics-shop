@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const overlay = document.getElementById('overlay');
   const panel   = document.getElementById('cart-panel');
-  const openBtn = document.querySelector('.icon-link[href="/cart/"]');
+  const openBtn = document.querySelector('a[href="/cart/"]');
   const closeBtn= panel.querySelector('.cart-close');
   const body    = panel.querySelector('.cart-panel__body');
   const totalEl = document.getElementById('cart-total');
@@ -13,23 +13,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function loadCart() {
     const res = await fetch('/api/cart/');
-    const { items, total } = await res.json();
-    body.innerHTML = items.map(item => `
-      <div class="cart-item-row">
-        <img src="${item.product.image || item.product.images[0]}" alt="${item.product.name}">
-        <div class="info">
-          <a href="/${item.product.id}/">${item.product.name}</a>
-          <p>${item.price} ₽ × ${item.quantity}</p>
+      const { items, total } = await res.json();
+      body.innerHTML = items.map(item => `
+        <div class="cart-item-row">
+          <img src="${item.image}" alt="${item.name}">
+          <div class="info">
+            <a href="/${item.id}/">${item.name}</a>
+            <p>${item.price} ₽ × ${item.quantity}</p>
+          </div>
+          <div class="controls">
+            <button data-action="dec" data-id="${item.id}">−</button>
+            <span>${item.quantity}</span>
+            <button data-action="inc" data-id="${item.id}">+</button>
+            <button data-action="remove" data-id="${item.id}">×</button>
+          </div>
         </div>
-        <div class="controls">
-          <button data-action="dec" data-id="${item.product.id}">−</button>
-          <span>${item.quantity}</span>
-          <button data-action="inc" data-id="${item.product.id}">+</button>
-          <button data-action="remove" data-id="${item.product.id}">×</button>
-        </div>
-      </div>
-    `).join('');
-    totalEl.textContent = total;
+        `).join('');
+      totalEl.textContent = total;
     attachHandlers();
   }
 
@@ -60,11 +60,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  openBtn.addEventListener('click', e => {
-    e.preventDefault();
-    toggle(true);
-    loadCart();
-  });
+  if (openBtn) {
+    openBtn.addEventListener('click', e => {
+      e.preventDefault();
+      toggle(true);
+      loadCart();
+    });
+  }
   closeBtn.addEventListener('click', () => toggle(false));
   overlay.addEventListener('click', () => toggle(false));
 });

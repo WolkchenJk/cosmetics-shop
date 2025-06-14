@@ -17,41 +17,39 @@ async function updateCartOnServer(url, body) {
 }
 
 async function addToCart(id, qty = 1) {
-  const data = await updateCartOnServer('/api/cart/add/', { product_id: id, quantity: qty });
-  console.log('Cart after add:', data.cart || data);  // для дебага
-  renderCart();  
+  await updateCartOnServer('/api/cart/add/', { product_id: id, quantity: qty });
+  renderCart();
 }
 
 async function removeFromCart(id) {
-  const data = await updateCartOnServer('/api/cart/remove/', { product_id: id });
-  console.log('Cart after remove:', data.cart || data);
+  await updateCartOnServer('/api/cart/remove/', { product_id: id });
   renderCart();
 }
 
 async function renderCart() {
-  const res = await fetch('/api/cart/');
-  const { items, total } = await res.json();
-  const container = document.getElementById('cart');
-  if (!container) return;
-  container.innerHTML = `
-    <h1>Корзина</h1>
-    ${items.map(item => `
-      <div class="cart-item-row">
-        <img src="${item.product.image || item.product.images[0]}" alt="${item.product.name}">
-        <div class="info">
-          <a href="/${item.product.id}/">${item.product.name}</a>
-          <p>${item.price} ₽ × ${item.quantity}</p>
+    const res = await fetch('/api/cart/');
+    const { items, total } = await res.json();
+    const container = document.getElementById('cart');
+    if (!container) return;
+    container.innerHTML = `
+      <h1>Корзина</h1>
+      ${items.map(item => `
+        <div class="cart-item-row">
+          <img src="${item.image}" alt="${item.name}">
+          <div class="info">
+            <a href="/${item.id}/">${item.name}</a>
+            <p>${item.price} ₽ × ${item.quantity}</p>
+          </div>
+          <div class="controls">
+            <button data-action="dec" data-id="${item.id}">−</button>
+            <span>${item.quantity}</span>
+            <button data-action="inc" data-id="${item.id}">+</button>
+            <button data-action="remove" data-id="${item.id}">×</button>
+          </div>
         </div>
-        <div class="controls">
-          <button data-action="dec" data-id="${item.product.id}">−</button>
-          <span>${item.quantity}</span>
-          <button data-action="inc" data-id="${item.product.id}">+</button>
-          <button data-action="remove" data-id="${item.product.id}">×</button>
-        </div>
-      </div>
-    `).join('')}
-    <div class="cart-total">Итого: ${total} ₽</div>
-  `;
+      `).join('')}
+      <div class="cart-total">Итого: ${total} ₽</div>
+    `;
   container.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id;
@@ -77,6 +75,7 @@ async function renderCart() {
     });
   });
 }
+
 
 // Навешиваем кнопку «В корзину» на странице товара
 document.addEventListener('DOMContentLoaded', () => {
