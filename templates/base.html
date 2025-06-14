@@ -22,15 +22,18 @@
 
   <!-- SIDEBAR PANEL -->
   <aside id="cart-panel" class="cart-panel">
-    <button type="button" class="cart-close">&times;</button>
+    <div class="cart-panel__header">
+      Корзина
+      <button type="button" class="cart-close">&times;</button>
+    </div>
 
     <div class="cart-panel__body">
       <!-- сюда JS будет рендерить товары -->
     </div>
 
     <div class="cart-panel__footer">
-      <span>Итого:</span>
-      <span id="cart-total">0</span> ₽
+      <span>Итого: <span id="cart-total">0</span> ₽</span>
+      <button class="checkout-btn">Оформить заказ</button>
     </div>
   </aside>
 

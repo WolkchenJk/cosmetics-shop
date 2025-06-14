@@ -34,18 +34,48 @@ async function renderCart() {
   const container = document.getElementById('cart');
   if (!container) return;
   container.innerHTML = `
-    <h2>Корзина</h2>
-    ${items.map(i => `
-      <div>
-        ${i.name} × ${i.quantity} = ${i.subtotal} ₽
-        <button data-id="${i.id}" class="remove">×</button>
+    <h1>Корзина</h1>
+    ${items.map(item => `
+      <div class="cart-item-row">
+        <img src="${item.product.image || item.product.images[0]}" alt="${item.product.name}">
+        <div class="info">
+          <a href="/${item.product.id}/">${item.product.name}</a>
+          <p>${item.price} ₽ × ${item.quantity}</p>
+        </div>
+        <div class="controls">
+          <button data-action="dec" data-id="${item.product.id}">−</button>
+          <span>${item.quantity}</span>
+          <button data-action="inc" data-id="${item.product.id}">+</button>
+          <button data-action="remove" data-id="${item.product.id}">×</button>
+        </div>
       </div>
     `).join('')}
-    <p><strong>Итого:</strong> ${total} ₽</p>
+    <div class="cart-total">Итого: ${total} ₽</div>
   `;
-  container.querySelectorAll('.remove').forEach(btn =>
-    btn.addEventListener('click', ()=> removeFromCart(btn.dataset.id))
-  );
+  container.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      let url = '/api/cart/';
+      let method = 'POST';
+      let bodyData = { product_id: id, quantity: 1 };
+
+      if (action === 'inc') {
+        url = '/api/cart/add/';
+      } else if (action === 'dec') {
+        url = '/api/cart/add/';
+        bodyData.quantity = -1;
+      } else if (action === 'remove') {
+        url = '/api/cart/remove/';
+      }
+      await fetch(url, {
+        method,
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(bodyData)
+      });
+      renderCart();
+    });
+  });
 }
 
 // Навешиваем кнопку «В корзину» на странице товара
